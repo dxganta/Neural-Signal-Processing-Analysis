@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from attributedict.collections import AttributeDict
 from numpy.fft import fft, ifft
 from scipy.interpolate import interp1d
+from mne.viz import plot_topomap
 
 def plot_simEEG(*args):
     """
@@ -83,3 +84,46 @@ def plot_simEEG(*args):
     plt.title('Time-frequency plot')
 
     plt.show()
+    
+def topoPlotIndie(eeg, values, title='Topoplot', vlim=(None, None), cmap='RdBu_r', contours=6):
+    '''
+        eeg = eeg mat file loaded
+        values = volt values to plot
+    '''
+    def pol2cart(theta, rho):
+        theta_rad = np.deg2rad(theta)
+        x = rho * np.cos(theta_rad)
+        y = rho * np.sin(theta_rad)
+        return x, y
+
+
+    head_rad = 0.095
+    plot_rad = 0.51
+    squeezefac = head_rad/plot_rad
+
+    eeg_chanlocs = []
+    for i in range(64):
+        local_chanloc = []
+        x = list(eeg['chanlocs'][0][0][0][i])
+        th = x[1][0][0]
+        rd = x[2][0][0]
+
+        th, rd = pol2cart(th,rd)
+        eeg_chanlocs.append([rd * squeezefac,th*squeezefac])
+
+    eeg_chanlocs = np.array(eeg_chanlocs)
+    
+    fig, ax = plt.subplots(figsize=(8,8))
+    im, _ = plot_topomap(values, eeg_chanlocs, axes=ax, show=False, 
+                         cmap=cmap, ch_type='eeg', size = 200,
+                        contours=contours, vlim=vlim)
+    plt.colorbar(im)
+
+    # title
+    plt.title(title)
+    plt.show()
+    
+    
+def time_to_id(times_arr, time2plot):
+    # convert time in ms to time in indices
+    return np.argmin(np.abs(times_arr - time2plot))
