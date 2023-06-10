@@ -8,9 +8,6 @@ from mne.viz import plot_topomap
 def plot_simEEG(*args):
     """
     plot_simEEG - plot function for MXC's course on neural time series analysis
-    INPUTS:  EEG : eeglab structure
-             chan : channel to plot (default = 0)
-           fignum : figure to plot into (default = 0)
     """
     if not args:
         raise ValueError('No inputs!')
